@@ -1,7 +1,7 @@
 var request = require('request');
 var cheerio = require('cheerio');
 var validUrl = require('valid-url');
-
+var URL = require('url');
 
 module.exports = {
     crawlForData: function (url, className, callback) {
@@ -17,30 +17,55 @@ module.exports = {
         request(url, function (error, response, body) {
             if (!error && response.statusCode == 200) {
                 var $ = cheerio.load(body);
-                console.log(body);
                 var data = [];
-                var tempData;
+
 
                 $(className).each(function (i, elem) {
-                    
-                    console.log('******************** ' + i + ' ********************');
-                    console.log('href ' + $(elem).find('a').attr('href'));
-                    console.log('src ' + $(elem).find('img').attr('src'));
-                   
-                    
-                    console.log('+++++++++++ ' + i + ' +++++++++++');
-                    //look at top view
-                    console.log('href ' + $(elem).attr('href'));
-                    console.log('src ' + $(elem).attr('src'));
-                    console.log('text ' + $(elem).text());
+                    //check if the class is nested and ignore top level
+                    if ($(elem).find(className).length <= 0) {
+                        var links = [];
+                        var imgs = []
 
-                    console.log('----------- ' + i + ' -----------');
-                    //look at bottom view
-                    tempData = $(this).find(':not(:has(*))');
-                    console.log('href ' + $(tempData).attr('href'));
-                    console.log('src ' + $(tempData).attr('src'));
-                    console.log('text ' + $(tempData).text());
-                    data.push(tempData);
+                        $($(this).find('a')).each(function (i, elem) {
+                            var link = $(elem).attr('href');
+
+                            if (!validUrl.isUri(link)) {
+                                if (link.indexOf('/') != 0) {
+                                    link = '/' + link;
+                                }
+                                link = URL.parse(url).protocol + '//' + URL.parse(url).hostname + link;
+                            }
+                            links.push(link);
+                        });
+
+                        $($(this).find('img')).each(function (i, elem) {
+                            var img = $(elem).attr('src');
+
+                            if (!validUrl.isUri(link)) {
+                                if (img.indexOf('/') != 0) {
+                                    img = '/' + img;
+                                }
+                                img = URL.parse(url).protocol + '//' + URL.parse(url).hostname + img;
+                            }
+                            imgs.push(img);
+                        });
+
+                        var content = $(elem).text().replace(/\s{2,9999}/g, ' ');
+
+
+                        //
+                        //                        request(link, function (error, response, body) {
+                        //                            if (!error && response.statusCode == 200) {
+                        //                            
+                        //                            }
+                        //                        });
+
+                        data.push({
+                            links: links,
+                            imgs: imgs,
+                            content: content
+                        });
+                    }
                 });
                 callback(data);
             }
