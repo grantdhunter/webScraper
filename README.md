@@ -1,9 +1,9 @@
 #webScraper
 
 ##Requirements:
--templated
--input: url, classes
--output: json of classes
+- templated
+- input: url, classes
+- output: json of classes
 
 
 ##output example:
