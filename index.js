@@ -44,13 +44,15 @@ function crawlForData(url, className, callback, crawlModule) {
 
                     //for custom content you want parsed from the class
                     if (crawlModule) {
+
                         //The module takes a jquery HTML object
                         //Returns a promise
                         promise = crawlModule(elem);
                         promise.then(function (data) {
-                            classContent.push(data);
+                            if (data) {
+                                classContent.push(data);
+                            }
                         });
-                        promises.push(promise);
                     } else {
                         //some premade crawlModules 
                         switch (URL.parse(url).hostname) {
@@ -58,20 +60,24 @@ function crawlForData(url, className, callback, crawlModule) {
                             //async process
                             promise = imdbCrawlModule(elem);
                             promise.then(function (data) {
-                                classContent.push(data);
+                                if (data) {
+                                    classContent.push(data);
+                                }
                             });
-                            promises.push(promise);
                             break;
+                            //TODO: Add more premade website specific crawlers 
                         default:
                             //generic content scraping
                             //this is syncronous
                             promise = genericCrawlModule(elem);
                             promise.then(function (data) {
-                                classContent.push(data);
+                                if (data) {
+                                    classContent.push(data);
+                                }
                             });
-                            promises.push(promise);
                         }
                     }
+                    promises.push(promise);
                 }
             });
 
@@ -168,21 +174,21 @@ function crawlForData(url, className, callback, crawlModule) {
 
                 //prettify the title
                 var title = $(body).find('[itemprop="name"]').first().text().trim();
-                
+
                 //prettify the description
                 var desc = $(body).find('[itemprop="description"]')
                     .text()
                     .replace(/\s{2,9999}/g, ' ')
                     .trim();
-                
+
                 var image = $(body).find('[itemprop="image"]').attr('src');
                 //normalize
                 image = normalizeLink(image);
-                
+
                 var trailer = $(body).find('[itemprop="trailer"]').attr('href');
                 //normalize
                 trailer = normalizeLink(trailer);
-                
+
                 var link = links[0];
 
                 deferred.resolve({

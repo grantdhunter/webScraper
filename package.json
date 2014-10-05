@@ -21,9 +21,9 @@
   },
   "homepage": "https://github.com/grantdhunter/webScraper",
   "dependencies": {
-    "request": "~2.44.0",
     "cheerio": "~0.17.0",
-    "valid-url": "~1.0.9",
-    "q": "~1.0.1"
+    "q": "~1.0.1",
+    "request": "~2.44.0",
+    "valid-url": "~1.0.9"
   }
 }
