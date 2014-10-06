@@ -41,7 +41,6 @@ function crawlForData(url, className, callback, crawlModule) {
                 if ($(elem).find(className).length <= 0) {
 
                     var promise;
-
                     //for custom content you want parsed from the class
                     if (crawlModule) {
 
@@ -166,42 +165,56 @@ function crawlForData(url, className, callback, crawlModule) {
         var links = getAllLinks(element, 'a', 'href');
         var deferred = Q.defer();
 
-        //Must travel to new page with more information about the movie.
-        request(links[0], function (error, response, body) {
-            if (!error && response.statusCode == 200) {
+        if (links[0]) {
+            //Must travel to new page with more information about the movie.
+            request(links[0], function (error, response, body) {
+                if (!error && response.statusCode == 200) {
 
-                var $ = cheerio.load(body);
+                    var $ = cheerio.load(body);
 
-                //prettify the title
-                var title = $(body).find('[itemprop="name"]').first().text().trim();
+                    //prettify the title
+                    var title = $(body).find('[itemprop="name"]').first().text().trim();
 
-                //prettify the description
-                var desc = $(body).find('[itemprop="description"]')
-                    .text()
-                    .replace(/\s{2,9999}/g, ' ')
-                    .trim();
+                    //prettify the description
+                    var desc = $(body).find('[itemprop="description"]')
+                        .text()
+                        .replace(/\s{2,9999}/g, ' ')
+                        .trim();
 
-                var image = $(body).find('[itemprop="image"]').attr('src');
-                //normalize
-                image = normalizeLink(image);
+                    var image = $(body).find('[itemprop="image"]').attr('src');
+                    //normalize
+                    image = normalizeLink(image);
 
-                var trailer = $(body).find('[itemprop="trailer"]').attr('href');
-                //normalize
-                trailer = normalizeLink(trailer);
+                    var trailer = $(body).find('[itemprop="trailer"]').attr('href');
+                    //normalize
+                    trailer = normalizeLink(trailer);
 
-                var link = links[0];
+                    var link = links[0];
 
-                deferred.resolve({
-                    title: title,
-                    desc: desc,
-                    image: image,
-                    trailer: trailer,
-                    url: link
-                });
-            } else {
-                deferred.reject(new Error(error));
-            }
-        });
+                    deferred.resolve({
+                        title: title,
+                        desc: desc,
+                        image: image,
+                        trailer: trailer,
+                        url: link
+                    });
+                } else {
+                    deferred.reject(new Error(error));
+                }
+            });
+        } else {
+            var $ = cheerio.load(element);
+            var title = $(element).find('h4').first().text().trim();
+            var image = $(element).find('img').attr('src');
+            image = normalizeLink(image);
+            deferred.resolve({
+                title: title,
+                desc: null,
+                image: image,
+                trailer: null,
+                url: null
+            });
+        }
         return deferred.promise;
     }
 }
